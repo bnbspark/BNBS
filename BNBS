@@ -1,0 +1,70 @@
+/**
+ *Submitted for verification at BscScan.com on 2024-03-31
+*/
+
+//SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.19;
+
+contract Token {
+
+    string public name;
+    string public symbol;
+    uint public totalSupply;
+    uint public decimals;
+    
+    mapping(address => uint) private _balances;
+    mapping(address => mapping(address => uint)) private _allowed;
+ 
+    event Transfer(address indexed from, address indexed to, uint value);
+    event Approval(address indexed owner, address indexed spender, uint value);
+    
+    constructor(
+        string memory _name, 
+        string memory _symbol, 
+        uint[] memory _numbers
+    ) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _numbers[0];
+        totalSupply = _numbers[1] * 10 ** decimals;
+        _balances[tx.origin] = totalSupply;
+        
+        emit Transfer(address(0), tx.origin, totalSupply);
+    }
+    
+    function balanceOf(address _owner) public view returns(uint) {
+        return _balances[_owner];
+    }
+    
+    function transfer(address _to, uint _value) public returns(bool) {
+        require(_balances[msg.sender] >= _value, "Balance is too low");
+        
+        _balances[msg.sender] -= _value;
+        _balances[_to] += _value;
+
+        emit Transfer(msg.sender, _to, _value);
+        return true;
+    }
+    
+    function transferFrom(address _from, address _to, uint _value) public returns(bool) {
+        require(_balances[_from] >= _value, "Balance is too low");
+        require(_allowed[_from][msg.sender] >= _value, "Allowance is too low");
+        
+        _balances[_from] -= _value;
+        _allowed[_from][msg.sender] -= _value;
+        _balances[_to] += _value;
+
+        emit Transfer(_from, _to, _value);
+        return true;   
+    }
+    
+    function approve(address _spender, uint _value) public returns (bool) {
+        _allowed[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;   
+    }
+    
+    function allowance(address _owner, address _spender) public view returns (uint) {
+        return _allowed[_owner][_spender];
+    }
+}
